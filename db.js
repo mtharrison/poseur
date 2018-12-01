@@ -4,6 +4,7 @@
 
 const MongoClient = require('mongodb').MongoClient;
 
+const Table = require('./table');
 
 exports = module.exports = class {
 
@@ -14,7 +15,7 @@ exports = module.exports = class {
         this.client = null;
         this.url = `mongodb://${options.host || 'localhost'}:${options.port || 27017}`;
 
-        this.tables = [];
+        this.tables = {};
     }
 
     async connect() {
@@ -30,7 +31,12 @@ exports = module.exports = class {
 
     table(tables, options) {
 
-        this.tables = this.tables.concat(tables);
+        tables.forEach((name) => {
+            
+            const table = new Table(this.db, name);
+            this[name] = table;
+            this.tables[name] = table;
+        });
     }
 
     async establish() {
