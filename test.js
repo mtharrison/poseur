@@ -1,21 +1,19 @@
-const Monsieur = require('.');
+const Poseur = require('.');
 
 
 const fn = async () => {
 
-    const database = new Monsieur.Db('develop', { host: 'localhost', port: 27017 });
+    const database = new Poseur.Db('wave');
 
     await database.connect();
+    database.table(['card']);
+    await database.establish({ card: {} });
 
-    console.log('connected');
+    // database.card.changes(function (change) {
 
-    database.table(['mytable']);
+    //     console.log(JSON.stringify(change, null, 2));
+    // });
 
-    console.log(database.mytable);
-
-    await database.close();
-
-    console.log('closed');
 };
 
 fn();

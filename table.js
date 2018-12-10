@@ -2,13 +2,27 @@
 
 // Load Modules
 
-const MongoClient = require('mongodb').MongoClient;
+const Hoek = require('hoek');
 
+var format = require('pg-format');
 
 exports = module.exports = class {
 
-    constructor(db, name) {
+    constructor(name, db) {
 
-        this.collection = db.collection(name);
+        this.name = name;
+        this.db = db;
     }
+
+    async insert(rows) {
+
+        if (!rows.length) {
+            return;
+        }
+
+        const query = format(`INSERT INTO "${this.name}" (data) VALUES %L`, rows.map((r) => [r]))        
+
+        await this.db.client.query(query);
+    }
+
 }

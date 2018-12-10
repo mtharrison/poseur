@@ -2,7 +2,7 @@
 
 // Load Modules
 
-const MongoClient = require('mongodb').MongoClient;
+const { Client } = require('pg')
 
 const Table = require('./table');
 
@@ -12,36 +12,59 @@ exports = module.exports = class {
 
         this.name = name;
         this.options = options;
-        this.client = null;
-        this.url = `mongodb://${options.host || 'localhost'}:${options.port || 27017}`;
+        this.client = new Client({
+            user: 'postgres',
+            password: 'password',
+            database: this.name
+        });
 
         this.tables = {};
+
+        this._connected = false;
     }
 
     async connect() {
 
-        this.client = await MongoClient.connect(this.url, { useNewUrlParser: true });
-        this.db = this.client.db(this.name);
+        await this.client.connect();
+        this._connected = true;
     }
 
     async close() {
 
-        await this.client.close();
     }
 
     table(tables, options) {
 
+        if (!typeof tables === 'string' &&
+            !Array.isArray(tables)) {
+            tables = Object.keys(tables);
+        }
+
+        tables = [].concat(tables);
+
         tables.forEach((name) => {
-            
-            const table = new Table(this.db, name);
+
+            const table = new Table(name, this);
             this[name] = table;
             this.tables[name] = table;
         });
     }
 
-    async establish() {
+    async establish(tables) {
 
-        // Do nothing - mongo will lazily create collections
+        if (!this._connected) {
+            await this.connect();
+        }
+
+        const tableList = Object.keys(tables);
+
+        for (const table of tableList) {
+
+            const res = await this.client.query(`CREATE TABLE IF NOT EXISTS "${table}" (
+                data JSONB,
+                id SERIAL PRIMARY KEY
+            )`);
+        }
 
         return;
     }
