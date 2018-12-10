@@ -3,11 +3,11 @@ const Poseur = require('.');
 
 const fn = async () => {
 
-    const database = new Poseur.Db('wave');
+    const database = new Poseur.Db('test');
 
     await database.connect();
-    database.table(['card']);
-    await database.establish({ card: {} });
+    database.table(['example']);
+    await database.establish({ example: {} });
 
     // database.card.changes(function (change) {
 
